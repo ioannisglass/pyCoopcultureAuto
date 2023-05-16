@@ -10,6 +10,52 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+import pyautogui
+import random
+user_agent_list = [
+    # Chrome
+    'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 5.1 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.2 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (X11 Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.3 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+    'Mozilla/4.0 (compatible MSIE 9.0 Windows NT 6.1)',
+    'Mozilla/5.0 (Windows NT 6.1 WOW64 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (compatible MSIE 9.0 Windows NT 6.1 WOW64 Trident/5.0)',
+    'Mozilla/5.0 (Windows NT 6.1 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 6.2 WOW64 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 10.0 WOW64 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (compatible MSIE 9.0 Windows NT 6.0 Trident/5.0)',
+    'Mozilla/5.0 (Windows NT 6.3 WOW64 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (compatible MSIE 9.0 Windows NT 6.1 Trident/5.0)',
+    'Mozilla/5.0 (Windows NT 6.1 Win64 x64 Trident/7.0 rv:11.0) like Gecko',
+    'Mozilla/5.0 (compatible MSIE 10.0 Windows NT 6.1 WOW64 Trident/6.0)',
+    'Mozilla/5.0 (compatible MSIE 10.0 Windows NT 6.1 Trident/6.0)',
+    'Mozilla/4.0 (compatible MSIE 8.0 Windows NT 5.1 Trident/4.0 .NET CLR 2.0.50727 .NET CLR 3.0.4506.2152 .NET CLR 3.5.30729)',
+    'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'Mozilla/5.0 (compatible U ABrowse 0.6 Syllable) AppleWebKit/420+ (KHTML, like Gecko)',
+    'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36 OPR/36.0.2130.32',
+    'Opera/9.80 (Windows NT 6.1 WOW64) Presto/2.12.388 Version/12.18',
+    'Mozilla/5.0 (Windows NT 10.0 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 OPR/43.0.2442.991',
+    'Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14',
+    'Opera/9.80 (Windows NT 5.1 WOW64) Presto/2.12.388 Version/12.17'
+]
+def enter_proxy_auth(proxy_username, proxy_password):
+    time.sleep(1)
+    pyautogui.typewrite(proxy_username)
+    pyautogui.press('tab')
+    pyautogui.typewrite(proxy_password)
+    pyautogui.press('enter')
+
+pyautogui.FAILSAFE = False
 
 strDate = input('Input date (mm-dd-yyyy) \n')
 objDate = datetime.strptime(strDate, '%m-%d-%Y').date()
@@ -57,11 +103,35 @@ while True:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
+        proxy_file = open("proxies.txt", "r")
+        proxy_list = proxy_file.readlines()
+        proxy_line = random.choice(proxy_list)
+        proxy = proxy_line
+        if proxy_line.find('\n') != -1:
+            proxy = proxy_line[:proxy_line.find('\n')]
+        proxy = proxy.strip()
+        proxy_ip = proxy.split(":")[0]
+        proxy_port = proxy.split(":")[1]
+        # proxy_user = proxy.split(":")[2]
+        # proxy_password = proxy.split(":")[3]
+        proxy = Proxy()
+        proxy.proxyType = ProxyType.MANUAL
+        proxy.autodetect = False
+        proxy_string = proxy_ip + ":" + proxy_port
+        proxy.httpProxy = proxy.sslProxy = proxy.socksProxy = proxy_string
+        # proxy.socksPassword = proxy_password
+        # proxy.socksUsername = proxy_user
+        chrome_options.Proxy = proxy
+        
+        chrome_options.add_argument('--proxy-server={}'.format(proxy_string))
+        user_agent = random.choice(user_agent_list)
+        chrome_options.add_argument("--user-agent=" + user_agent)
+        
         service = ChromeService(executable_path=ChromeDriverManager().install())
         chrome_driver = webdriver.Chrome(service=service, options=chrome_options)
         stealth(
             chrome_driver,
-            user_agent='',
+            user_agent=user_agent,
             languages=["en-US", "en"],
             vendor="Google Inc.",
             platform="Win32",
@@ -71,7 +141,13 @@ while True:
             run_on_insecure_origins=False
         )
         chrome_driver.maximize_window()
-        chrome_driver.get(strUrl)
+        try:
+            chrome_driver.get(strUrl)
+        except Exception as ex:
+            print(ex)
+            continue
+        
+        # enter_proxy_auth(proxy_user, proxy_password)
         
         # check availability of day
         # available_dates = chrome_driver.find_elements(By.XPATH, "//td[@class='calendar-day  text-center' and @style='background: #eee']")
